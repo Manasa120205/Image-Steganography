@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Encryption/Decryption</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e3f2fd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            width: 450px;
+            text-align: center;
+        }
+        h2 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 25px;
+        }
+        input[type="file"], input[type="password"], button {
+            width: 100%;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            font-size: 18px;
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        input[type="file"] {
+            padding: 12px;
+            background-color: #fafafa;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .download-link {
+            display: none;
+            margin-top: 20px;
+            color: #007bff;
+            font-size: 18px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        .download-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🔒 Image Encryption & Decryption</h2>
+        <input type="file" id="imageFile" accept=".jpg, .jpeg, .png, .bin">
+        <input type="password" id="password" placeholder="Enter password">
+        <button onclick="encryptImage()">🔐 Encrypt Image</button>
+        <button onclick="decryptImage()">🔓 Decrypt Image</button>
+        <a id="downloadLink" class="download-link">📥 Download File</a>
+    </div>
+
+    <script>
+        async function encryptImage() {
+            const file = document.getElementById('imageFile').files[0];
+            const password = document.getElementById('password').value;
+
+            if (!file || !password) {
+                alert("Please select an image and enter a password.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('password', password);
+
+            const response = await fetch('/encrypt', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const downloadLink = document.getElementById('downloadLink');
+                downloadLink.href = url;
+                downloadLink.download = 'encrypted_image.bin';
+                downloadLink.style.display = 'block';
+                downloadLink.click();
+                alert("Encryption successful! File downloaded.");
+            } else {
+                const error = await response.text();
+                alert(`Encryption failed: ${error}`);
+            }
+        }
+
+        async function decryptImage() {
+            const file = document.getElementById('imageFile').files[0];
+            const password = document.getElementById('password').value;
+
+            if (!file || !password) {
+                alert("Please select a file and enter a password.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('password', password);
+
+            const response = await fetch('/decrypt', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const downloadLink = document.getElementById('downloadLink');
+                downloadLink.href = url;
+                downloadLink.download = 'decrypted_image.jpg';
+                downloadLink.style.display = 'block';
+                downloadLink.click();
+                alert("Decryption successful! File downloaded.");
+            } else {
+                const error = await response.text();
+                alert(`Decryption failed: ${error}`);
+            }
+        }
+    </script>
+</body>
+</html>
